@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  links     Link[]
+  apiKeys   ApiKey[]
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Link {
+  id           String       @id @default(uuid())
+  slug         String       @unique
+  originalUrl  String
+  customDomain String?
+  expiresAt    DateTime?
+  tags         String[]
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id])
+  createdAt    DateTime     @default(now())
+  clicks       ClickEvent[]
+}
+
+model ClickEvent {
+  id        String   @id @default(uuid())
+  linkId    String
+  link      Link     @relation(fields: [linkId], references: [id])
+  ipHash    String?
+  userAgent String?
+  country   String?
+  referrer  String?
+  createdAt DateTime @default(now())
+}
+
+model BlockedDomain {
+  id        String   @id @default(uuid())
+  domain    String   @unique
+  createdAt DateTime @default(now())
+}
